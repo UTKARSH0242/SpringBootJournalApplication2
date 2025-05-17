@@ -32,16 +32,13 @@ public class UserService {
             userRepository.save(user);
             return true;
         } catch (Exception e) {
-            log.error("Error occurred for {}:",user.getUsername(),e);
-//             logger.info("haaahhahhahaha",e);
+            logger.error("An error occurred while saving the user", e);
             throw new RuntimeException(e);
         }
 
     }
 
     public void saveUser(User user) {
-//        user.setPassword(passwordEncoder.encode(user.getPassword()));
-//        user.setRoles(Arrays.asList("USER"));
         userRepository.save(user);
     }
 

@@ -33,14 +33,12 @@ public class JournalEntryService {
             journalEntry.setDate(LocalDateTime.now());
             JournalEntry saved = journalEntryRepository.save(journalEntry);
             user.getJournalEntries().add(saved);
-//            user.setUsername(null);
             userService.saveUser(user);
         } catch (Exception e) {
             logger.info("hahhahahahhaha");
             log.error("Error while saving entry", e);
             throw new RuntimeException("Error while saving entry", e);
         }
-//        journalEntryRepository.save(journalEntry);
     }
 
     public void saveEntry(JournalEntry journalEntry) {

@@ -1,8 +1,10 @@
 package com.utkarsh.journalApp.controller;
 
+import com.utkarsh.journalApp.api.response.WeatherResponse;
 import com.utkarsh.journalApp.entity.User;
 import com.utkarsh.journalApp.repository.UserRepository;
 import com.utkarsh.journalApp.service.UserService;
+import com.utkarsh.journalApp.service.WeatherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,10 +23,13 @@ public class UserController {
     @Autowired
     private UserRepository userRepository;
 
-    @GetMapping
-    public List<User> getAllUsers() {
-        return userService.getAll();
-    }
+    @Autowired
+    private WeatherService weatherService;
+
+//    @GetMapping
+//    public List<User> getAllUsers() {
+//        return userService.getAll();
+//    }
 
     @PostMapping
     public void createUser(@RequestBody User user) {
@@ -42,8 +47,6 @@ public class UserController {
             userService.saveNewUser(userInDb);
         }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-
-
     }
 
     @DeleteMapping("/user")
@@ -53,4 +56,14 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @GetMapping
+    public ResponseEntity<?> greeting() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        WeatherResponse weatherResponse = weatherService.getWeather("Noida");
+        String greeting ="";
+        if (weatherResponse != null) {
+            greeting = ", Weather feels like " + weatherResponse.getCurrent().getFeelslike();
+        }
+        return new ResponseEntity<>("Hello " + authentication.getName()+ greeting , HttpStatus.OK);
+    }
 }
