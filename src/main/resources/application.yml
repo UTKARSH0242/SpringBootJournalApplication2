@@ -8,3 +8,7 @@ logging:
     com:
       utkarsh:
         journalApp: DEBUG
+
+weather:
+  api:
+    key: ea814d33c2ab270b5ef17f34e000dceb

@@ -1,5 +1,6 @@
 package com.utkarsh.journalApp;
 
+import com.utkarsh.journalApp.cache.AppCache;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -25,6 +26,11 @@ public class JournalApplication {
 	@Bean
 	public RestTemplate restTemplate() {
 		return new RestTemplate();
+	}
+
+	@Bean
+	public AppCache appCache() {
+		return new AppCache();
 	}
 
 }
