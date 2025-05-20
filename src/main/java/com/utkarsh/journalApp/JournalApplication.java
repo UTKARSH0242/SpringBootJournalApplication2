@@ -28,10 +28,10 @@ public class JournalApplication {
 		return new RestTemplate();
 	}
 
-	@Bean
-	public AppCache appCache() {
-		return new AppCache();
-	}
+//	@Bean
+//	public AppCache appCache() {
+//		return new AppCache();
+//	}
 
 }
 

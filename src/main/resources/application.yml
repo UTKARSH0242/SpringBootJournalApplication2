@@ -2,12 +2,12 @@ spring:
   profiles:
     active: dev
 
-
 logging:
   level:
     com:
       utkarsh:
         journalApp: DEBUG
+    org.springframework.mail: DEBUG  # Added for email debugging
 
 weather:
   api:
