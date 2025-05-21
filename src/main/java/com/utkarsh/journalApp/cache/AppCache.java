@@ -21,7 +21,7 @@ public class AppCache {
 
 
     @PostConstruct
-    private void init(){
+    public void init(){
         List<ConfigJournalAppEntity> all = configJournalAppRepository.findAll();
         for (ConfigJournalAppEntity configJournalAppEntity : all) {
             APP_CACHE.put(configJournalAppEntity.getKey(),configJournalAppEntity.getValue());

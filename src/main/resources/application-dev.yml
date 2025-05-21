@@ -1,4 +1,7 @@
 spring:
+  redis:
+    host: localhost
+    port: 6379
   data:
     mongodb:
       uri: mongodb+srv://utkarshdubey0242:ZU6CXN41NYhNt1wk@myjournalapp.ajczvxd.mongodb.net/?retryWrites=true&w=majority&appName=MyJournalApp
