@@ -29,15 +29,17 @@ public class SpringSecurity {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/public/**").permitAll() // Allow public endpoints first
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll() // Allow
-                                                                                                              // Swagger
-                                                                                                              // UI
-                        .requestMatchers(HttpMethod.POST, "/user").permitAll() // Allow POST /user without
-                                                                               // authentication
-                        .requestMatchers("/admin/**").hasRole("ADMIN") // Admin endpoints require ADMIN role
-                        .requestMatchers("/journal/**", "/user/**").authenticated() // Other endpoints require
-                                                                                    // authentication
+                        // Allow Swagger UI and API docs (must be first)
+                        .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
+                                "/swagger-resources/**", "/webjars/**")
+                        .permitAll()
+                        // Allow public endpoints
+                        .requestMatchers("/public/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/user").permitAll()
+                        // Admin endpoints require ADMIN role
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        // Other endpoints require authentication
+                        .requestMatchers("/journal/**", "/user/**").authenticated()
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
