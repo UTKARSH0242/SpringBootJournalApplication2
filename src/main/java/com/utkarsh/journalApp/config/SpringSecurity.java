@@ -29,10 +29,12 @@ public class SpringSecurity {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers(HttpMethod.POST, "/user").permitAll() // Allow POST /user without authentication
-                        .requestMatchers("/public/**").permitAll()
-                        .requestMatchers("/journal/**", "/user/**").authenticated()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/public/**").permitAll() // Allow public endpoints first
+                        .requestMatchers(HttpMethod.POST, "/user").permitAll() // Allow POST /user without
+                                                                               // authentication
+                        .requestMatchers("/admin/**").hasRole("ADMIN") // Admin endpoints require ADMIN role
+                        .requestMatchers("/journal/**", "/user/**").authenticated() // Other endpoints require
+                                                                                    // authentication
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
@@ -45,7 +47,8 @@ public class SpringSecurity {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 }
