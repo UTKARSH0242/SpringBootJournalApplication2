@@ -30,6 +30,9 @@ public class SpringSecurity {
         return http
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/public/**").permitAll() // Allow public endpoints first
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll() // Allow
+                                                                                                              // Swagger
+                                                                                                              // UI
                         .requestMatchers(HttpMethod.POST, "/user").permitAll() // Allow POST /user without
                                                                                // authentication
                         .requestMatchers("/admin/**").hasRole("ADMIN") // Admin endpoints require ADMIN role
