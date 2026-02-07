@@ -13,10 +13,11 @@ public class PublicController {
     private UserService userService;
 
     @GetMapping("/health-check")
-    public String healthCheck(){
+    public String healthCheck() {
         return "You are fit and fine";
     }
-    @PostMapping("create-user")
+
+    @PostMapping("/create-user")
     public void createUser(@RequestBody User user) {
         userService.saveNewUser(user);
     }
