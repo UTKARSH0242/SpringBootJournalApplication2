@@ -33,30 +33,42 @@ public class JournalEntryService {
 
     @Transactional
     public void saveEntry(JournalEntry journalEntry, String username) {
+        logger.info("Attempting to save entry for user: {}", username);
         try {
             User user = userService.findByUsername(username);
             journalEntry.setDate(LocalDateTime.now());
 
-            // AI Sentiment Analysis
-            String sentimentStr = sentimentAnalysisService
-                    .getSentiment(journalEntry.getTitle() + " " + journalEntry.getContent());
-            try {
-                if (sentimentStr != null && !sentimentStr.isEmpty()) {
-                    journalEntry.setSentiment(com.utkarsh.journalApp.enums.Sentiment.valueOf(sentimentStr));
-                }
-                // AI Coach Feedback (Gemini)
-                String feedback = geminiService
-                        .getCoachFeedback(journalEntry.getTitle() + " " + journalEntry.getContent());
-                journalEntry.setAiFeedback(feedback);
-            } catch (Exception e) {
-                log.warn("Error processing AI features for entry: " + e.getMessage());
-            }
+            /*
+             * // AI Sentiment Analysis
+             * logger.debug("Running sentiment analysis...");
+             * String sentimentStr = sentimentAnalysisService
+             * .getSentiment(journalEntry.getTitle() + " " + journalEntry.getContent());
+             * try {
+             * if (sentimentStr != null && !sentimentStr.isEmpty()) {
+             * journalEntry.setSentiment(com.utkarsh.journalApp.enums.Sentiment.valueOf(
+             * sentimentStr));
+             * }
+             * // AI Coach Feedback (Gemini)
+             * logger.debug("Requesting AI coach feedback from Gemini...");
+             * String feedback = geminiService
+             * .getCoachFeedback(journalEntry.getTitle() + " " + journalEntry.getContent());
+             * journalEntry.setAiFeedback(feedback);
+             * logger.debug("Feedback received: {}", feedback);
+             * } catch (Exception e) {
+             * logger.warn("Error processing AI features for entry: {}", e.getMessage());
+             * }
+             */
 
             JournalEntry saved = journalEntryRepository.save(journalEntry);
+            logger.info("Entry saved with ID: {}", saved.getId());
+            if (user.getJournalEntries() == null) {
+                user.setJournalEntries(new java.util.ArrayList<>());
+            }
             user.getJournalEntries().add(saved);
             userService.saveUser(user);
+            logger.info("User {} updated with new entry.", username);
         } catch (Exception e) {
-            log.error("Error while saving entry", e);
+            logger.error("Error while saving entry for user: " + username, e);
             throw new RuntimeException("Error while saving entry", e);
         }
     }

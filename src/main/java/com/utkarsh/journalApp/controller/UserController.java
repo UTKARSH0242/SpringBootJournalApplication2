@@ -26,6 +26,9 @@ public class UserController {
     @Autowired
     private WeatherService weatherService;
 
+    @Autowired
+    private com.utkarsh.journalApp.service.EmailService emailService;
+
     // @GetMapping
     // public List<User> getAllUsers() {
     // return userService.getAll();
@@ -70,5 +73,16 @@ public class UserController {
         }
 
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @GetMapping("/test-email")
+    public ResponseEntity<?> testEmail() {
+        try {
+            emailService.sendMail("utkarshdubey0242@gmail.com", "Test Email from Journal App",
+                    "Hello! This is a test email to verify your SMTP configuration.");
+            return new ResponseEntity<>("Email sent successfully", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Failed to send email: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

@@ -47,10 +47,11 @@ public class JournalEntryController {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String userName = authentication.getName();
-            myEntry.setDate(LocalDateTime.now());
             journalEntryService.saveEntry(myEntry, userName);
             return new ResponseEntity<>(myEntry, HttpStatus.CREATED);
         } catch (Exception e) {
+            System.err.println("Error in createEntry: " + e.getMessage());
+            e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
@@ -114,8 +115,11 @@ public class JournalEntryController {
                 Optional<JournalEntry> journalEntry = journalEntryService.findById(objectId);
                 if (journalEntry.isPresent()) {
                     JournalEntry old = journalEntry.get();
-                    old.setTitle(newEntry.getTitle() != null && !newEntry.getTitle().isEmpty() ? newEntry.getTitle() : old.getTitle());
-                    old.setContent(newEntry.getContent() != null && !newEntry.getContent().isEmpty() ? newEntry.getContent() : old.getContent());
+                    old.setTitle(newEntry.getTitle() != null && !newEntry.getTitle().isEmpty() ? newEntry.getTitle()
+                            : old.getTitle());
+                    old.setContent(
+                            newEntry.getContent() != null && !newEntry.getContent().isEmpty() ? newEntry.getContent()
+                                    : old.getContent());
                     journalEntryService.saveEntry(old);
                     return new ResponseEntity<>(old, HttpStatus.OK);
                 }
