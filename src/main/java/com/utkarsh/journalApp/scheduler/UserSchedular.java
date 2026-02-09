@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 @Component
 public class UserSchedular {
 
-
     @Autowired
     private EmailService emailService;
 
@@ -30,15 +29,17 @@ public class UserSchedular {
     @Autowired
     private AppCache appCache;
 
-    @Autowired
-//    private KafkaTemplate<String, SentimentData> kafkaTemplate;
+    // @Autowired
+    // private KafkaTemplate<String, SentimentData> kafkaTemplate;
 
     @Scheduled(cron = "0 0 9 * * SUN")
     public void fetchUsersAndSendSaMail() {
         List<User> users = userRepository.getUserforSA();
         for (User user : users) {
             List<JournalEntry> journalEntries = user.getJournalEntries();
-            List<Sentiment> sentiments = journalEntries.stream().filter(x -> x.getDate().isAfter(LocalDateTime.now().minus(7, ChronoUnit.DAYS))).map(x -> x.getSentiment()).collect(Collectors.toList());
+            List<Sentiment> sentiments = journalEntries.stream()
+                    .filter(x -> x.getDate().isAfter(LocalDateTime.now().minus(7, ChronoUnit.DAYS)))
+                    .map(x -> x.getSentiment()).collect(Collectors.toList());
             Map<Sentiment, Integer> sentimentCounts = new HashMap<>();
             for (Sentiment sentiment : sentiments) {
                 if (sentiment != null)
@@ -55,14 +56,18 @@ public class UserSchedular {
             if (mostFrequentSentiment != null) {
                 emailService.sendMail(user.getEmail(), "Sentiment for previous week", mostFrequentSentiment.toString());
             }
-//            if (mostFrequentSentiment != null) {
-//                SentimentData sentimentData = SentimentData.builder().email(user.getEmail()).sentiment("Sentiment for last 7 days " + mostFrequentSentiment).build();
-//                try{
-//                    kafkaTemplate.send("weekly-sentiments", sentimentData.getEmail(), sentimentData);
-//                }catch (Exception e){
-//                    emailService.sendEmail(sentimentData.getEmail(), "Sentiment for previous week", sentimentData.getSentiment());
-//                }
-//            }
+            // if (mostFrequentSentiment != null) {
+            // SentimentData sentimentData =
+            // SentimentData.builder().email(user.getEmail()).sentiment("Sentiment for last
+            // 7 days " + mostFrequentSentiment).build();
+            // try{
+            // kafkaTemplate.send("weekly-sentiments", sentimentData.getEmail(),
+            // sentimentData);
+            // }catch (Exception e){
+            // emailService.sendEmail(sentimentData.getEmail(), "Sentiment for previous
+            // week", sentimentData.getSentiment());
+            // }
+            // }
         }
     }
 

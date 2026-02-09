@@ -26,10 +26,10 @@ public class UserController {
     @Autowired
     private WeatherService weatherService;
 
-//    @GetMapping
-//    public List<User> getAllUsers() {
-//        return userService.getAll();
-//    }
+    // @GetMapping
+    // public List<User> getAllUsers() {
+    // return userService.getAll();
+    // }
 
     @PostMapping
     public void createUser(@RequestBody User user) {
@@ -59,11 +59,16 @@ public class UserController {
     @GetMapping
     public ResponseEntity<?> greeting() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        WeatherResponse weatherResponse = weatherService.getWeather("New Delhi");
-        String greeting ="";
+        WeatherResponse weatherResponse = weatherService.getWeather("Bengaluru");
+
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        response.put("username", authentication.getName());
+
         if (weatherResponse != null) {
-            greeting = ", Weather feels like " + weatherResponse.getCurrent().getFeelslike();
+            response.put("weather", weatherResponse.getCurrent());
+            response.put("location", "Bengaluru");
         }
-        return new ResponseEntity<>("Hello " + authentication.getName()+ greeting, HttpStatus.OK);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
