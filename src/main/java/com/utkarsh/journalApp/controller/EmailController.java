@@ -86,10 +86,11 @@ public class EmailController {
                 emailService.sendMail(user.getEmail(), subject, body);
 
                 // Log the email
-                if (user.getEmailLogs() == null) {
-                    user.setEmailLogs(new java.util.ArrayList<>());
+                if (user.getEmailLogEntries() == null) {
+                    user.setEmailLogEntries(new java.util.ArrayList<>());
                 }
-                user.getEmailLogs().add(LocalDateTime.now());
+                user.getEmailLogEntries().add(new com.utkarsh.journalApp.entity.EmailLog(LocalDateTime.now(),
+                        sentimentMessage, user.getEmail()));
                 userService.saveUser(user); // Fixed: Use saveUser instead of saveNewUser
 
                 return new ResponseEntity<>("Email sent successfully with sentiment: " + sentimentMessage,
@@ -104,5 +105,16 @@ public class EmailController {
             }
             return new ResponseEntity<>("Failed to send email: " + errorMsg, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @GetMapping("/logs")
+    public ResponseEntity<?> getEmailLogs() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userName = authentication.getName();
+        User user = userService.findByUsername(userName);
+        if (user != null && user.getEmailLogEntries() != null) {
+            return new ResponseEntity<>(user.getEmailLogEntries(), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(java.util.Collections.emptyList(), HttpStatus.OK);
     }
 }

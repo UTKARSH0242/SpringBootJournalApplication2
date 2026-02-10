@@ -35,4 +35,5 @@ public class User {
     private List<JournalEntry> journalEntries = new ArrayList<>();
     private List<String> roles;
     private List<LocalDateTime> emailLogs;
+    private List<EmailLog> emailLogEntries;
 }
