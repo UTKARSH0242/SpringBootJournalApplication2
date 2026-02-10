@@ -33,8 +33,54 @@ public class EmailController {
                 return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
             }
 
-            String subject = "Your Journal Summary";
-            String body = "Here is a summary of your recent journal activity. Keep writing!";
+            // Calculate overall sentiment
+            java.util.Map<com.utkarsh.journalApp.enums.Sentiment, Integer> sentimentCounts = new java.util.HashMap<>();
+            if (user.getJournalEntries() != null) {
+                for (com.utkarsh.journalApp.entity.JournalEntry entry : user.getJournalEntries()) {
+                    if (entry.getSentiment() != null) {
+                        sentimentCounts.put(entry.getSentiment(),
+                                sentimentCounts.getOrDefault(entry.getSentiment(), 0) + 1);
+                    }
+                }
+            }
+
+            com.utkarsh.journalApp.enums.Sentiment mostFrequentSentiment = null;
+            int maxCount = 0;
+            for (java.util.Map.Entry<com.utkarsh.journalApp.enums.Sentiment, Integer> entry : sentimentCounts
+                    .entrySet()) {
+                if (entry.getValue() > maxCount) {
+                    maxCount = entry.getValue();
+                    mostFrequentSentiment = entry.getKey();
+                }
+            }
+
+            String sentimentMessage = "Neutral 😐";
+            if (mostFrequentSentiment != null) {
+                switch (mostFrequentSentiment) {
+                    case HAPPY:
+                        sentimentMessage = "Happy 😃";
+                        break;
+                    case SAD:
+                        sentimentMessage = "Sad 😢";
+                        break;
+                    case ANGRY:
+                        sentimentMessage = "Angry 😠";
+                        break;
+                    case ANXIOUS:
+                        sentimentMessage = "Anxious 😰";
+                        break;
+                    case NEUTRAL:
+                        sentimentMessage = "Neutral 😐";
+                        break;
+                }
+            }
+
+            String subject = "Your Weekly Emotional Summary";
+            String body = "Hello " + user.getUsername() + ",\n\n" +
+                    "Based on your recent journal entries, your overall emotion is: " + sentimentMessage + "\n\n" +
+                    "Keep journaling to track your mood!\n\n" +
+                    "Best,\n" +
+                    "Journal App Team";
 
             if (user.getEmail() != null && !user.getEmail().isEmpty()) {
                 emailService.sendMail(user.getEmail(), subject, body);
@@ -46,7 +92,8 @@ public class EmailController {
                 user.getEmailLogs().add(LocalDateTime.now());
                 userService.saveUser(user); // Fixed: Use saveUser instead of saveNewUser
 
-                return new ResponseEntity<>("Email sent successfully", HttpStatus.OK);
+                return new ResponseEntity<>("Email sent successfully with sentiment: " + sentimentMessage,
+                        HttpStatus.OK);
             } else {
                 return new ResponseEntity<>("User email not found", HttpStatus.BAD_REQUEST);
             }
