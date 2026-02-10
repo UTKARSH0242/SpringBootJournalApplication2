@@ -75,9 +75,9 @@ public class EmailController {
                 }
             }
 
-            String subject = "Your Weekly Emotional Summary";
+            String subject = "Your Overall Emotional Summary";
             String body = "Hello " + user.getUsername() + ",\n\n" +
-                    "Based on your recent journal entries, your overall emotion is: " + sentimentMessage + "\n\n" +
+                    "Based on your all-time journal entries, your overall emotion is: " + sentimentMessage + "\n\n" +
                     "Keep journaling to track your mood!\n\n" +
                     "Best,\n" +
                     "Journal App Team";
