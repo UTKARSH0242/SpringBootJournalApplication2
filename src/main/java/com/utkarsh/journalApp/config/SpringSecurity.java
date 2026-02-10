@@ -29,21 +29,17 @@ public class SpringSecurity {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeHttpRequests(request -> request
-                        // Allow Swagger UI and API docs (must be first)
-                        // .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
-                        // "/swagger-resources/**", "/webjars/**")
-                        // .permitAll()
-                        // // Allow public endpoints
-                        // .requestMatchers("/public/**").permitAll()
+                        // Allow Swagger UI and public endpoints
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
                                 "/swagger-resources/**", "/webjars/**")
                         .permitAll()
-                        // Allow public endpoints
                         .requestMatchers("/public/**").permitAll()
+                        // POST to /user is used by some contexts for creation, but standard is
+                        // /public/create-user
                         .requestMatchers(HttpMethod.POST, "/user").permitAll()
                         // Admin endpoints require ADMIN role
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        // Other endpoints require authentication
+                        // Everything else requires authentication
                         .requestMatchers("/journal/**", "/journal", "/user/**", "/user", "/email/**", "/email")
                         .authenticated()
                         .anyRequest().authenticated())

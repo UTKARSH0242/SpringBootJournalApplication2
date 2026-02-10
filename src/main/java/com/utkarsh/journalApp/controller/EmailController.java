@@ -11,7 +11,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @RestController
 @RequestMapping("/email")
@@ -45,7 +44,7 @@ public class EmailController {
                     user.setEmailLogs(new java.util.ArrayList<>());
                 }
                 user.getEmailLogs().add(LocalDateTime.now());
-                userService.saveNewUser(user);
+                userService.saveUser(user); // Fixed: Use saveUser instead of saveNewUser
 
                 return new ResponseEntity<>("Email sent successfully", HttpStatus.OK);
             } else {
@@ -59,5 +58,4 @@ public class EmailController {
             return new ResponseEntity<>("Failed to send email: " + errorMsg, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
 }

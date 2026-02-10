@@ -45,8 +45,8 @@ public class UserController {
         String userName = authentication.getName();
         User userInDb = userService.findByUsername(userName);
         if (userInDb != null) {
-            userInDb.setPassword(user.getPassword());
             userInDb.setUsername(user.getUsername());
+            userInDb.setPassword(user.getPassword());
             userService.saveNewUser(userInDb);
         }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
