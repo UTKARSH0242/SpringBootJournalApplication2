@@ -30,6 +30,11 @@ public class SpringSecurity {
         return http
                 .authorizeHttpRequests(request -> request
                         // Allow Swagger UI and API docs (must be first)
+                        // .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
+                        // "/swagger-resources/**", "/webjars/**")
+                        // .permitAll()
+                        // // Allow public endpoints
+                        // .requestMatchers("/public/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
                                 "/swagger-resources/**", "/webjars/**")
                         .permitAll()
@@ -39,12 +44,15 @@ public class SpringSecurity {
                         // Admin endpoints require ADMIN role
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         // Other endpoints require authentication
-                        .requestMatchers("/journal/**", "/user/**").authenticated()
+                        .requestMatchers("/journal/**", "/journal", "/user/**", "/user", "/email/**", "/email")
+                        .authenticated()
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(httpSecurityCorsConfigurer -> httpSecurityCorsConfigurer
                         .configurationSource(corsConfigurationSource()))
+                .sessionManagement(session -> session.sessionCreationPolicy(
+                        org.springframework.security.config.http.SessionCreationPolicy.STATELESS))
                 .build();
     }
 

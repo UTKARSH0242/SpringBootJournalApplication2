@@ -13,10 +13,14 @@ public class EmailService {
     @Autowired
     public JavaMailSender javaMailSender;
 
+    @org.springframework.beans.factory.annotation.Value("${spring.mail.username}")
+    private String senderEmail;
+
     public void sendMail(String to, String subject, String body) {
         try {
+            log.info("Attempting to send mail from: {}", senderEmail);
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("utkarshdubey0242@gmail.com");
+            message.setFrom(senderEmail);
             message.setTo(to);
             message.setSubject(subject);
             message.setText(body);

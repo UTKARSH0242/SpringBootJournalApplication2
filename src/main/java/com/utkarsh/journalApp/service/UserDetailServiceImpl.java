@@ -22,7 +22,7 @@ public class UserDetailServiceImpl implements UserDetailsService {
             return org.springframework.security.core.userdetails.User.builder()
                     .username(user.getUsername())
                     .password(user.getPassword())
-                    .roles(user.getRoles().toArray(new String[0]))
+                    .roles(user.getRoles() != null ? user.getRoles().toArray(new String[0]) : new String[] { "USER" })
                     .build();
         }
         throw new UsernameNotFoundException("User not found with username: " + username);

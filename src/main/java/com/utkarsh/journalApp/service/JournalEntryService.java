@@ -38,26 +38,25 @@ public class JournalEntryService {
             User user = userService.findByUsername(username);
             journalEntry.setDate(LocalDateTime.now());
 
-            /*
-             * // AI Sentiment Analysis
-             * logger.debug("Running sentiment analysis...");
-             * String sentimentStr = sentimentAnalysisService
-             * .getSentiment(journalEntry.getTitle() + " " + journalEntry.getContent());
-             * try {
-             * if (sentimentStr != null && !sentimentStr.isEmpty()) {
-             * journalEntry.setSentiment(com.utkarsh.journalApp.enums.Sentiment.valueOf(
-             * sentimentStr));
-             * }
-             * // AI Coach Feedback (Gemini)
-             * logger.debug("Requesting AI coach feedback from Gemini...");
-             * String feedback = geminiService
-             * .getCoachFeedback(journalEntry.getTitle() + " " + journalEntry.getContent());
-             * journalEntry.setAiFeedback(feedback);
-             * logger.debug("Feedback received: {}", feedback);
-             * } catch (Exception e) {
-             * logger.warn("Error processing AI features for entry: {}", e.getMessage());
-             * }
-             */
+            try {
+                // AI Sentiment Analysis
+                logger.debug("Running sentiment analysis...");
+                String sentimentStr = sentimentAnalysisService
+                        .getSentiment(journalEntry.getTitle() + " " + journalEntry.getContent());
+
+                if (sentimentStr != null && !sentimentStr.isEmpty()) {
+                    journalEntry.setSentiment(com.utkarsh.journalApp.enums.Sentiment.valueOf(sentimentStr));
+                }
+
+                // AI Coach Feedback (Gemini)
+                logger.debug("Requesting AI coach feedback from Gemini...");
+                String feedback = geminiService
+                        .getCoachFeedback(journalEntry.getTitle() + " " + journalEntry.getContent());
+                journalEntry.setAiFeedback(feedback);
+                logger.debug("Feedback received: {}", feedback);
+            } catch (Exception e) {
+                logger.warn("Error processing AI features for entry: {}", e.getMessage());
+            }
 
             JournalEntry saved = journalEntryRepository.save(journalEntry);
             logger.info("Entry saved with ID: {}", saved.getId());

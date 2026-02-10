@@ -27,6 +27,9 @@ public class JournalEntryController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private org.springframework.data.redis.core.RedisTemplate<String, String> redisTemplate;
+
     @GetMapping
     public ResponseEntity<?> getAllJournalEntriesOfUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -35,8 +38,38 @@ public class JournalEntryController {
         if (user == null) {
             return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
         }
-        List<JournalEntry> all = user.getJournalEntries();
+
+        String key = "journal_entries:" + userName;
+        List<JournalEntry> all = null;
+
+        // 1. Try fetching from Redis
+        try {
+            String cachedData = redisTemplate.opsForValue().get(key);
+            if (cachedData != null) {
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                mapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
+                all = mapper.readValue(cachedData,
+                        new com.fasterxml.jackson.core.type.TypeReference<List<JournalEntry>>() {
+                        });
+                return new ResponseEntity<>(all, HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            // Redis error, fallback to DB
+        }
+
+        // 2. Fetch from DB
+        all = user.getJournalEntries();
+
+        // 3. Save to Redis
         if (all != null && !all.isEmpty()) {
+            try {
+                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                mapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
+                String jsonString = mapper.writeValueAsString(all);
+                redisTemplate.opsForValue().set(key, jsonString, 10, java.util.concurrent.TimeUnit.MINUTES);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             return new ResponseEntity<>(all, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -48,10 +81,15 @@ public class JournalEntryController {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String userName = authentication.getName();
             journalEntryService.saveEntry(myEntry, userName);
+
+            // Invalidate Cache
+            try {
+                redisTemplate.delete("journal_entries:" + userName);
+            } catch (Exception e) {
+            }
+
             return new ResponseEntity<>(myEntry, HttpStatus.CREATED);
         } catch (Exception e) {
-            System.err.println("Error in createEntry: " + e.getMessage());
-            e.printStackTrace();
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
@@ -89,6 +127,12 @@ public class JournalEntryController {
             String userName = authentication.getName();
             boolean removed = journalEntryService.deleteById(objectId, userName);
             if (removed) {
+                // Invalidate Cache
+                try {
+                    redisTemplate.delete("journal_entries:" + userName);
+                } catch (Exception e) {
+                }
+
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             } else {
                 return new ResponseEntity<>("Journal entry not found", HttpStatus.NOT_FOUND);
@@ -121,6 +165,13 @@ public class JournalEntryController {
                             newEntry.getContent() != null && !newEntry.getContent().isEmpty() ? newEntry.getContent()
                                     : old.getContent());
                     journalEntryService.saveEntry(old);
+
+                    // Invalidate Cache
+                    try {
+                        redisTemplate.delete("journal_entries:" + userName);
+                    } catch (Exception e) {
+                    }
+
                     return new ResponseEntity<>(old, HttpStatus.OK);
                 }
             }

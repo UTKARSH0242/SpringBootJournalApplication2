@@ -62,10 +62,18 @@ public class UserController {
     @GetMapping
     public ResponseEntity<?> greeting() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        User user = userService.findByUsername(username);
+
         WeatherResponse weatherResponse = weatherService.getWeather("Bengaluru");
 
         java.util.Map<String, Object> response = new java.util.HashMap<>();
-        response.put("username", authentication.getName());
+        response.put("username", username);
+        if (user != null) {
+            response.put("email", user.getEmail());
+            response.put("sentimentAnalysis", user.isSentimentAnalysis());
+            response.put("roles", user.getRoles());
+        }
 
         if (weatherResponse != null) {
             response.put("weather", weatherResponse.getCurrent());
