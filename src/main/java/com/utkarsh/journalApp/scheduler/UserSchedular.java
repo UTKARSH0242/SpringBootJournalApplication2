@@ -6,6 +6,7 @@ import com.utkarsh.journalApp.entity.User;
 import com.utkarsh.journalApp.enums.Sentiment;
 import com.utkarsh.journalApp.repository.UserRepositoryImpl;
 import com.utkarsh.journalApp.service.EmailService;
+import com.utkarsh.journalApp.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -27,10 +28,10 @@ public class UserSchedular {
     private UserRepositoryImpl userRepository;
 
     @Autowired
-    private AppCache appCache;
+    private UserService userService;
 
-    // @Autowired
-    // private KafkaTemplate<String, SentimentData> kafkaTemplate;
+    @Autowired
+    private AppCache appCache;
 
     @Scheduled(cron = "0 0 9 * * SUN")
     public void fetchUsersAndSendSaMail() {
@@ -53,21 +54,38 @@ public class UserSchedular {
                     mostFrequentSentiment = entry.getKey();
                 }
             }
+
             if (mostFrequentSentiment != null) {
-                emailService.sendMail(user.getEmail(), "Sentiment for previous week", mostFrequentSentiment.toString());
+                String sentimentMessage = "Neutral 😐";
+                switch (mostFrequentSentiment) {
+                    case HAPPY:
+                        sentimentMessage = "Happy 😃";
+                        break;
+                    case SAD:
+                        sentimentMessage = "Sad 😢";
+                        break;
+                    case ANGRY:
+                        sentimentMessage = "Angry 😠";
+                        break;
+                    case ANXIOUS:
+                        sentimentMessage = "Anxious 😰";
+                        break;
+                    case NEUTRAL:
+                        sentimentMessage = "Neutral 😐";
+                        break;
+                }
+
+                emailService.sendMail(user.getEmail(), "Your Weekly Emotional Summary",
+                        "Sentiment for previous week: " + sentimentMessage);
+
+                // Log the email
+                if (user.getEmailLogEntries() == null) {
+                    user.setEmailLogEntries(new java.util.ArrayList<>());
+                }
+                user.getEmailLogEntries().add(new com.utkarsh.journalApp.entity.EmailLog(LocalDateTime.now(),
+                        sentimentMessage, user.getEmail()));
+                userService.saveUser(user);
             }
-            // if (mostFrequentSentiment != null) {
-            // SentimentData sentimentData =
-            // SentimentData.builder().email(user.getEmail()).sentiment("Sentiment for last
-            // 7 days " + mostFrequentSentiment).build();
-            // try{
-            // kafkaTemplate.send("weekly-sentiments", sentimentData.getEmail(),
-            // sentimentData);
-            // }catch (Exception e){
-            // emailService.sendEmail(sentimentData.getEmail(), "Sentiment for previous
-            // week", sentimentData.getSentiment());
-            // }
-            // }
         }
     }
 
