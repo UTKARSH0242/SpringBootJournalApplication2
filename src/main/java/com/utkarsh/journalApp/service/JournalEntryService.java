@@ -36,6 +36,7 @@ public class JournalEntryService {
         try {
             User user = userService.findByUsername(username);
             journalEntry.setDate(LocalDateTime.now());
+            journalEntry.setUsername(username);
 
             try {
                 // AI Sentiment Analysis (Gemini)

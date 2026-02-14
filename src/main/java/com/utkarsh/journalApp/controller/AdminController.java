@@ -26,8 +26,35 @@ public class AdminController {
     }
 
     @PostMapping("/create-admin-user")
-    public void createAdmin(@RequestBody User user){
+    public void createAdmin(@RequestBody User user) {
         userService.saveAdmin(user);
+    }
+
+    @GetMapping("/user-journals")
+    public ResponseEntity<?> getUserJournals(@RequestParam String username) {
+        User user = userService.findByUsername(username);
+        if (user != null) {
+            List<com.utkarsh.journalApp.entity.JournalEntry> journalEntries = user.getJournalEntries();
+            return new ResponseEntity<>(journalEntries, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @Autowired
+    private com.utkarsh.journalApp.service.JournalEntryService journalEntryService;
+
+    @GetMapping("/migrate-usernames")
+    public ResponseEntity<?> migrateUsernames() {
+        List<User> users = userService.getAll();
+        int count = 0;
+        for (User user : users) {
+            for (com.utkarsh.journalApp.entity.JournalEntry entry : user.getJournalEntries()) {
+                entry.setUsername(user.getUsername());
+                journalEntryService.saveEntry(entry);
+                count++;
+            }
+        }
+        return new ResponseEntity<>("Migrated " + count + " entries.", HttpStatus.OK);
     }
 
 }
