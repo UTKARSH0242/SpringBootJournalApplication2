@@ -69,6 +69,10 @@ public class WeatherService {
 
                 weatherResponse.setCurrent(current);
 
+                // Fetch location name
+                String locationName = getLocationName(lat, lon);
+                weatherResponse.setLocationName(locationName != null ? locationName : city);
+
                 // 3. Save to Redis with 30 min TTL
                 try {
                     com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
@@ -91,9 +95,32 @@ public class WeatherService {
             current.setFeelslike(27);
             current.setWeather_descriptions(java.util.Collections.singletonList("Sunny"));
             weatherResponse.setCurrent(current);
+            weatherResponse.setLocationName("Bengaluru");
         }
 
         return weatherResponse;
+    }
+
+    private String getLocationName(double lat, double lon) {
+        try {
+            String url = "https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=" + lat + "&longitude="
+                    + lon + "&localityLanguage=en";
+            ResponseEntity<java.util.Map> response = restTemplate.exchange(url, HttpMethod.GET, null,
+                    java.util.Map.class);
+            java.util.Map<String, Object> body = response.getBody();
+            if (body != null) {
+                String city = (String) body.get("city");
+                String locality = (String) body.get("locality");
+                if (city != null && !city.isEmpty())
+                    return city;
+                if (locality != null && !locality.isEmpty())
+                    return locality;
+                return (String) body.get("principalSubdivision");
+            }
+        } catch (Exception e) {
+            // Ignore error and return null to use fallback
+        }
+        return null;
     }
 
     private String getWeatherDescription(int code) {

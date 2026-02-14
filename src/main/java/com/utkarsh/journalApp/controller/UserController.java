@@ -83,7 +83,8 @@ public class UserController {
 
         if (weatherResponse != null) {
             response.put("weather", weatherResponse.getCurrent());
-            response.put("location", locationDisplay);
+            response.put("location",
+                    weatherResponse.getLocationName() != null ? weatherResponse.getLocationName() : locationDisplay);
         }
 
         return new ResponseEntity<>(response, HttpStatus.OK);

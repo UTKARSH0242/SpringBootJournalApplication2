@@ -10,6 +10,7 @@ import java.util.ArrayList;
 @Setter
 public class WeatherResponse {
     public Current current;
+    private String locationName;
 
     @Getter
     @Setter
