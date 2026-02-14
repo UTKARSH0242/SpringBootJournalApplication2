@@ -24,8 +24,7 @@ public class JournalEntryService {
     private JournalEntryRepository journalEntryRepository;
     @Autowired
     private UserService userService;
-    @Autowired
-    private SentimentAnalysisService sentimentAnalysisService;
+
     @Autowired
     private GeminiService geminiService;
 
@@ -39,23 +38,30 @@ public class JournalEntryService {
             journalEntry.setDate(LocalDateTime.now());
 
             try {
-                // AI Sentiment Analysis
+                // AI Sentiment Analysis (Gemini)
                 if (journalEntry.getSentiment() == null) {
-                    logger.debug("Running sentiment analysis...");
-                    String sentimentStr = sentimentAnalysisService
-                            .getSentiment(journalEntry.getTitle() + " " + journalEntry.getContent());
+                    logger.debug("Running sentiment analysis via Gemini...");
+                    String sentimentStr = geminiService
+                            .analyzeSentiment(journalEntry.getTitle() + " " + journalEntry.getContent());
 
                     if (sentimentStr != null && !sentimentStr.isEmpty()) {
-                        journalEntry.setSentiment(com.utkarsh.journalApp.enums.Sentiment.valueOf(sentimentStr));
+                        // Sanitize response just in case (e.g. remove whitespace)
+                        sentimentStr = sentimentStr.trim().toUpperCase();
+                        try {
+                            journalEntry.setSentiment(com.utkarsh.journalApp.enums.Sentiment.valueOf(sentimentStr));
+                        } catch (IllegalArgumentException e) {
+                            // Fallback to NEUTRAL if AI returns something unexpected
+                            journalEntry.setSentiment(com.utkarsh.journalApp.enums.Sentiment.NEUTRAL);
+                        }
                     }
                 }
 
                 // AI Coach Feedback (Gemini)
-                // logger.debug("Requesting AI coach feedback from Gemini...");
-                // String feedback = geminiService
-                // .getCoachFeedback(journalEntry.getTitle() + " " + journalEntry.getContent());
-                // journalEntry.setAiFeedback(feedback);
-                // logger.debug("Feedback received: {}", feedback);
+                logger.debug("Requesting AI coach feedback from Gemini...");
+                String feedback = geminiService
+                        .getCoachFeedback(journalEntry.getTitle() + " " + journalEntry.getContent());
+                journalEntry.setAiFeedback(feedback);
+                logger.debug("Feedback received: {}", feedback);
             } catch (Exception e) {
                 logger.warn("Error processing AI features for entry: {}", e.getMessage());
             }

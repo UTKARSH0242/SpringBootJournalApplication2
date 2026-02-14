@@ -60,12 +60,18 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<?> greeting() {
+    public ResponseEntity<?> greeting(@RequestParam(required = false) Double lat,
+            @RequestParam(required = false) Double lon) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         User user = userService.findByUsername(username);
 
-        WeatherResponse weatherResponse = weatherService.getWeather("Bengaluru");
+        // Default to Bengaluru if no coordinates provided
+        double latitude = (lat != null) ? lat : 12.9716;
+        double longitude = (lon != null) ? lon : 77.5946;
+        String locationDisplay = (lat != null && lon != null) ? "Current Location" : "Bengaluru";
+
+        WeatherResponse weatherResponse = weatherService.getWeather("Bengaluru", latitude, longitude);
 
         java.util.Map<String, Object> response = new java.util.HashMap<>();
         response.put("username", username);
@@ -77,7 +83,7 @@ public class UserController {
 
         if (weatherResponse != null) {
             response.put("weather", weatherResponse.getCurrent());
-            response.put("location", "Bengaluru");
+            response.put("location", locationDisplay);
         }
 
         return new ResponseEntity<>(response, HttpStatus.OK);

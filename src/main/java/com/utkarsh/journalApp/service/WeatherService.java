@@ -16,7 +16,9 @@ public class WeatherService {
     private String apiKey;
 
     // Open-Meteo API for Bengaluru (Latitude: 12.9716, Longitude: 77.5946)
-    private static final String API = "https://api.open-meteo.com/v1/forecast?latitude=12.9716&longitude=77.5946&current_weather=true";
+    // Open-Meteo API for Bengaluru (Latitude: 12.9716, Longitude: 77.5946)
+    // private static final String API =
+    // "https://api.open-meteo.com/v1/forecast?latitude=12.9716&longitude=77.5946&current_weather=true";
 
     @Autowired
     private RestTemplate restTemplate;
@@ -27,22 +29,15 @@ public class WeatherService {
     @Autowired
     private org.springframework.data.redis.core.RedisTemplate<String, String> redisTemplate;
 
-    public WeatherResponse getWeather(String city) {
+    public WeatherResponse getWeather(String city, double lat, double lon) {
         WeatherResponse weatherResponse = new WeatherResponse();
-        String cacheKey = "weather_" + city;
+        // Use coordinates for a unique cache key
+        String cacheKey = "weather_" + lat + "_" + lon;
 
         try {
             // 1. Check Redis Cache
             String cachedWeather = redisTemplate.opsForValue().get(cacheKey);
             if (cachedWeather != null) {
-                // Deserialize JSON string back to WeatherResponse (using Jackson or similar if
-                // needed,
-                // but for simplicity here assuming we might store it as a string or object.
-                // Let's refine this to verify what to store.
-                // Since RedisTemplate<String, String> is used, we need to
-                // serialize/deserialize.
-                // Re-writing to use ObjectMapper for robust JSON handling.)
-
                 com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
                 return mapper.readValue(cachedWeather, WeatherResponse.class);
             }
@@ -51,8 +46,10 @@ public class WeatherService {
         }
 
         try {
-            // 2. Fetch from Open-Meteo (No API Key needed)
-            ResponseEntity<java.util.Map> response = restTemplate.exchange(API, HttpMethod.GET, null,
+            // 2. Fetch from Open-Meteo with dynamic coordinates
+            String api = "https://api.open-meteo.com/v1/forecast?latitude=" + lat + "&longitude=" + lon
+                    + "&current_weather=true";
+            ResponseEntity<java.util.Map> response = restTemplate.exchange(api, HttpMethod.GET, null,
                     java.util.Map.class);
             java.util.Map<String, Object> body = response.getBody();
 

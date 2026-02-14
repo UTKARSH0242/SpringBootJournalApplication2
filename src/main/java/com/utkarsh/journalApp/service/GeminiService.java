@@ -35,4 +35,25 @@ public class GeminiService {
                 .call()
                 .content();
     }
+
+    public String getWeeklySummary(java.util.List<com.utkarsh.journalApp.entity.JournalEntry> entries) {
+        if (entries == null || entries.isEmpty()) {
+            return "No journal entries found for the past week.";
+        }
+
+        StringBuilder promptBuilder = new StringBuilder();
+        promptBuilder.append(
+                "Here are my journal entries from the past week. Please provide a concise, supportive summary of my week, highlighting key themes and emotions. Keep it under 100 words.\n\n");
+
+        for (com.utkarsh.journalApp.entity.JournalEntry entry : entries) {
+            promptBuilder.append("Date: ").append(entry.getDate()).append("\n");
+            promptBuilder.append("Title: ").append(entry.getTitle()).append("\n");
+            promptBuilder.append("Content: ").append(entry.getContent()).append("\n\n");
+        }
+
+        return chatClient.prompt()
+                .user(promptBuilder.toString())
+                .call()
+                .content();
+    }
 }

@@ -180,4 +180,36 @@ public class JournalEntryController {
             return new ResponseEntity<>("Invalid ObjectId", HttpStatus.BAD_REQUEST);
         }
     }
+
+    @Autowired
+    private com.utkarsh.journalApp.service.GeminiService geminiService;
+
+    @GetMapping("/weekly-summary")
+    public ResponseEntity<?> getWeeklySummary() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userName = authentication.getName();
+        User user = userService.findByUsername(userName);
+        if (user == null) {
+            return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
+        }
+
+        // Filter entries for the last 7 days
+        LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
+        List<JournalEntry> recentEntries = user.getJournalEntries().stream()
+                .filter(entry -> entry.getDate() != null && entry.getDate().isAfter(sevenDaysAgo))
+                .collect(Collectors.toList());
+
+        if (recentEntries.isEmpty()) {
+            return new ResponseEntity<>(
+                    java.util.Collections.singletonMap("summary", "No entries found for the last 7 days to summarize."),
+                    HttpStatus.OK);
+        }
+
+        try {
+            String summary = geminiService.getWeeklySummary(recentEntries);
+            return new ResponseEntity<>(java.util.Collections.singletonMap("summary", summary), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Error creating summary: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
