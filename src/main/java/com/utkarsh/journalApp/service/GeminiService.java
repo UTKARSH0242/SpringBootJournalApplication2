@@ -58,10 +58,13 @@ public class GeminiService {
     }
 
     public String getSentimentEmojis(String text) {
-        String prompt = "Read the following journal entry and analyze the emotions and themes, including complex or intimate topics. "
+        String prompt = "Read the following journal entry and analyze the emotions and themes, including complex, intimate, or explicit topics. "
                 +
-                "Respond with a string of 2-4 emojis that best capture the mood and content. " +
-                "Output ONLY the emojis separated by spaces. Example: '❤️ 🔥 😂' or '😢 💔 🌧️'. " +
+                "Respond with a string of 3-5 emojis that vividly capture the mood. " +
+                "Do NOT likely use a single emoji. Be expressive and raw. " +
+                "For sad/intimate/complex entries, use emojis like '💔', '🥀', '🤬', '🛌', '🌧️', '🔞' where appropriate. "
+                +
+                "Output ONLY the emojis separated by spaces. " +
                 "Entry: " + text;
 
         return chatClient.prompt()
