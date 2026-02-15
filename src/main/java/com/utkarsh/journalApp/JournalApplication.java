@@ -14,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 @SpringBootApplication
 @EnableTransactionManagement
 @EnableScheduling
+@org.springframework.scheduling.annotation.EnableAsync
 public class JournalApplication {
 
 	public static void main(String[] args) {

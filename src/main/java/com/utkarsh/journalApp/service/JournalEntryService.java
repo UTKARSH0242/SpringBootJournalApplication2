@@ -38,36 +38,10 @@ public class JournalEntryService {
             journalEntry.setDate(LocalDateTime.now());
             journalEntry.setUsername(username);
 
-            try {
-                // AI Sentiment Analysis (Gemini)
-                if (journalEntry.getSentiment() == null) {
-                    logger.debug("Running sentiment analysis via Gemini...");
-                    String sentimentStr = geminiService
-                            .analyzeSentiment(journalEntry.getTitle() + " " + journalEntry.getContent());
-
-                    if (sentimentStr != null && !sentimentStr.isEmpty()) {
-                        // Sanitize response just in case (e.g. remove whitespace)
-                        sentimentStr = sentimentStr.trim().toUpperCase();
-                        try {
-                            journalEntry.setSentiment(com.utkarsh.journalApp.enums.Sentiment.valueOf(sentimentStr));
-                        } catch (IllegalArgumentException e) {
-                            // Fallback to NEUTRAL if AI returns something unexpected
-                            journalEntry.setSentiment(com.utkarsh.journalApp.enums.Sentiment.NEUTRAL);
-                        }
-                    }
-                }
-
-                // AI Coach Feedback (Gemini)
-                logger.debug("Requesting AI coach feedback from Gemini...");
-                String feedback = geminiService
-                        .getCoachFeedback(journalEntry.getTitle() + " " + journalEntry.getContent());
-                journalEntry.setAiFeedback(feedback);
-                logger.debug("Feedback received: {}", feedback);
-            } catch (Exception e) {
-                logger.warn("Error processing AI features for entry: {}", e.getMessage());
-            }
-
             JournalEntry saved = journalEntryRepository.save(journalEntry);
+            // Async AI Processing
+            geminiService.processJournalEntryAi(saved, journalEntryRepository);
+
             logger.info("Entry saved with ID: {}", saved.getId());
             if (user.getJournalEntries() == null) {
                 user.setJournalEntries(new java.util.ArrayList<>());

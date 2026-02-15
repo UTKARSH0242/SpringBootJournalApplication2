@@ -56,4 +56,29 @@ public class GeminiService {
                 .call()
                 .content();
     }
+
+    @org.springframework.scheduling.annotation.Async
+    public void processJournalEntryAi(com.utkarsh.journalApp.entity.JournalEntry journalEntry,
+            com.utkarsh.journalApp.repository.JournalEntryRepository journalEntryRepository) {
+        try {
+            // Sentiment Analysis
+            String sentimentStr = analyzeSentiment(journalEntry.getTitle() + " " + journalEntry.getContent());
+            if (sentimentStr != null && !sentimentStr.isEmpty()) {
+                sentimentStr = sentimentStr.trim().toUpperCase();
+                try {
+                    journalEntry.setSentiment(com.utkarsh.journalApp.enums.Sentiment.valueOf(sentimentStr));
+                } catch (IllegalArgumentException e) {
+                    journalEntry.setSentiment(com.utkarsh.journalApp.enums.Sentiment.NEUTRAL);
+                }
+            }
+
+            // Coach Feedback
+            String feedback = getCoachFeedback(journalEntry.getTitle() + " " + journalEntry.getContent());
+            journalEntry.setAiFeedback(feedback);
+
+            journalEntryRepository.save(journalEntry);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
