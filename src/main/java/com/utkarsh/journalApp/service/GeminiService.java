@@ -57,6 +57,19 @@ public class GeminiService {
                 .content();
     }
 
+    public String getSentimentEmojis(String text) {
+        String prompt = "Read the following journal entry and analyze the emotions and themes, including complex or intimate topics. "
+                +
+                "Respond with a string of 2-4 emojis that best capture the mood and content. " +
+                "Output ONLY the emojis separated by spaces. Example: '❤️ 🔥 😂' or '😢 💔 🌧️'. " +
+                "Entry: " + text;
+
+        return chatClient.prompt()
+                .user(prompt)
+                .call()
+                .content();
+    }
+
     @org.springframework.scheduling.annotation.Async
     public void processJournalEntryAi(com.utkarsh.journalApp.entity.JournalEntry journalEntry,
             com.utkarsh.journalApp.repository.JournalEntryRepository journalEntryRepository) {
@@ -70,6 +83,12 @@ public class GeminiService {
                 } catch (IllegalArgumentException e) {
                     journalEntry.setSentiment(com.utkarsh.journalApp.enums.Sentiment.NEUTRAL);
                 }
+            }
+
+            // Emoji Analysis
+            String emojis = getSentimentEmojis(journalEntry.getTitle() + " " + journalEntry.getContent());
+            if (emojis != null) {
+                journalEntry.setSentimentEmojis(emojis.trim());
             }
 
             // Coach Feedback

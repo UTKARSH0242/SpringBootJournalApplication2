@@ -24,5 +24,6 @@ public class JournalEntry {
     private LocalDateTime date;
     private Sentiment sentiment;
     private String aiFeedback;
+    private String sentimentEmojis;
     private String username;
 }
