@@ -31,8 +31,10 @@ public class WeatherService {
 
     public WeatherResponse getWeather(String city, double lat, double lon) {
         WeatherResponse weatherResponse = new WeatherResponse();
-        // Use coordinates for a unique cache key
-        String cacheKey = "weather_" + lat + "_" + lon;
+        // Round coordinates to 2 decimal places for better cache hit rate
+        double roundedLat = Math.round(lat * 100.0) / 100.0;
+        double roundedLon = Math.round(lon * 100.0) / 100.0;
+        String cacheKey = "weather_" + roundedLat + "_" + roundedLon;
 
         try {
             // 1. Check Redis Cache

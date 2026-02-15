@@ -17,7 +17,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-
 @Service
 @Slf4j
 public class UserService {
@@ -30,15 +29,17 @@ public class UserService {
 
     public boolean saveNewUser(User user) {
         try {
+            if (user.getEmail() == null || user.getEmail().isEmpty()) {
+                throw new IllegalArgumentException("Email cannot be empty");
+            }
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             user.setRoles(Arrays.asList("USER"));
             userRepository.save(user);
             return true;
         } catch (Exception e) {
             logger.error("An error occurred while saving the user", e);
-            throw new RuntimeException(e);
+            throw new RuntimeException("An error occurred while saving the user: " + e.getMessage());
         }
-
     }
 
     public void saveUser(User user) {
@@ -47,11 +48,11 @@ public class UserService {
 
     public void saveAdmin(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRoles(Arrays.asList("USER","ADMIN"));
+        user.setRoles(Arrays.asList("USER", "ADMIN"));
         userRepository.save(user);
     }
 
-    public List<User> getAll(){
+    public List<User> getAll() {
         return userRepository.findAll();
     }
 

@@ -48,13 +48,34 @@ public class AdminController {
         List<User> users = userService.getAll();
         int count = 0;
         for (User user : users) {
-            for (com.utkarsh.journalApp.entity.JournalEntry entry : user.getJournalEntries()) {
-                entry.setUsername(user.getUsername());
-                journalEntryService.saveEntry(entry);
-                count++;
+            if (user.getJournalEntries() != null) {
+                for (com.utkarsh.journalApp.entity.JournalEntry entry : user.getJournalEntries()) {
+                    entry.setUsername(user.getUsername());
+                    journalEntryService.saveEntry(entry);
+                    count++;
+                }
             }
         }
         return new ResponseEntity<>("Migrated " + count + " entries.", HttpStatus.OK);
     }
 
+    @Autowired
+    private com.utkarsh.journalApp.scheduler.UserSchedular userSchedular;
+
+    @GetMapping("/trigger-mail")
+    public ResponseEntity<?> triggerMail() {
+        userSchedular.fetchUsersAndSendSaMail();
+        return new ResponseEntity<>("Mail triggered manually", HttpStatus.OK);
+    }
+
+    @PostMapping("/enable-sa")
+    public ResponseEntity<?> enableSa(@RequestParam String username) {
+        User user = userService.findByUsername(username);
+        if (user != null) {
+            user.setSentimentAnalysis(true);
+            userService.saveUser(user);
+            return new ResponseEntity<>("Sentiment Analysis enabled for " + username, HttpStatus.OK);
+        }
+        return new ResponseEntity<>("User not found", HttpStatus.NOT_FOUND);
+    }
 }

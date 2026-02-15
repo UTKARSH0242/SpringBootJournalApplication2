@@ -16,15 +16,15 @@ public class AppCache {
     @Autowired
     private ConfigJournalAppRepository configJournalAppRepository;
 
-    public Map<String,String> APP_CACHE = new HashMap<>();
-
-
+    public Map<String, String> APP_CACHE = new HashMap<>();
 
     @PostConstruct
-    public void init(){
+    public void init() {
+        Map<String, String> temp = new HashMap<>(); // Create temporary map
         List<ConfigJournalAppEntity> all = configJournalAppRepository.findAll();
         for (ConfigJournalAppEntity configJournalAppEntity : all) {
-            APP_CACHE.put(configJournalAppEntity.getKey(),configJournalAppEntity.getValue());
+            temp.put(configJournalAppEntity.getKey(), configJournalAppEntity.getValue());
         }
+        APP_CACHE = temp; // Atomic replacement
     }
 }

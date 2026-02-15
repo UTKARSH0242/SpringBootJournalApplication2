@@ -21,19 +21,22 @@ public class JournalApplication {
 	}
 
 	@Bean
-	public PlatformTransactionManager add(MongoDatabaseFactory  dbFactory ){
+	public PlatformTransactionManager add(MongoDatabaseFactory dbFactory) {
 		return new MongoTransactionManager(dbFactory);
 	}
 
 	@Bean
 	public RestTemplate restTemplate() {
-		return new RestTemplate();
+		org.springframework.http.client.SimpleClientHttpRequestFactory factory = new org.springframework.http.client.SimpleClientHttpRequestFactory();
+		factory.setConnectTimeout(3000);
+		factory.setReadTimeout(5000);
+		return new RestTemplate(factory);
 	}
 
-//	@Bean
-//	public AppCache appCache() {
-//		return new AppCache();
-//	}
+	// @Bean
+	// public AppCache appCache() {
+	// return new AppCache();
+	// }
 
 }
 
