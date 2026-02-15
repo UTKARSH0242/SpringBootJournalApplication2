@@ -45,6 +45,7 @@ public class WeatherService {
             }
         } catch (Exception e) {
             // Redis failure shouldn't stop the app
+            // Log.error("Redis connection failed", e);
         }
 
         try {
